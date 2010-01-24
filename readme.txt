@@ -10,7 +10,25 @@ A WordPress widget that gives you unprecendeted control over displaying your con
 
 == Description ==
 
-The *WordPress Loop* widget was written to allow users that don't know their way around PHP to easily show their content in any way they'd like.
+The *WordPress Loop* widget was written to allow users that don't know their way around PHP to easily show their content in any way they'd like. 
+
+The widget has over 35 options to choose from. Customize your WordPress loop by one or more post types, categories, tags, custom taxonomies, authors, dates, custom fields, and a whole lot more! 
+
+In addition, it has support for post thumbnails, sticky posts, pagination, offsetting, and you can customize the ordering from a variety of options. Oh, and you can also customize the content length by word count.
+
+*WordPress Loop* is truly an all-in-one solution for displaying your content on your site.
+
+== Developers ==
+
+The WordPress Loop utilizes the <code>WP_Query</code> class to generate the widget loops. <code>query_posts()</code> is *not* used as it only modifies the main <code>$wp_query</code> global which is not optimal when you have more than more loop on a page.
+
+== Hooks ==
+
+The WordPress Loop has several action hooks available throughout the loop process:
+	* <code>before_loop</code> - At the beginning of the loop
+	* <code>the_loop</code> - In the loop, after all the content
+	* <code>after_loop</code> - At the ending of the loop
+	* <code>loop_404</code> - When the loop can't find any post
 
 == Installation ==
 
@@ -20,6 +38,6 @@ The *WordPress Loop* widget was written to allow users that don't know their way
 
 == Changelog ==
 
-**0.1**
+**0.1** _(01/25/2010)_
 
-	* Initial release. (01/25/2010)
+	* Initial release.
