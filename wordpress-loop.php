@@ -1,7 +1,7 @@
 <?php
 /**
  * Plugin Name: WordPress Loop Widget
- * Plugin URI: http://ptahdunbar.com
+ * Plugin URI: http://ptahdunbar.com/plugins/wordpress-loop/
  * Description: A WordPress widget that gives you unprecendeted control over displaying your content.
  * Version: 0.1
  * Author: Ptah Dunbar
