@@ -39,7 +39,7 @@ The WordPress Loop has several action hooks available throughout the loop proces
 
 == Changelog ==
 
-**0.1** _(01/25/2010)_
+**0.1** _(01/24/2010)_
 
 	* Initial release.
 	
