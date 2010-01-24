@@ -41,3 +41,7 @@ The WordPress Loop has several action hooks available throughout the loop proces
 **0.1** _(01/25/2010)_
 
 	* Initial release.
+	
+== Screenshots ==
+
+1. View of the *WordPress Loop* widget settings.
