@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Loop Widget
  * Plugin URI: http://ptahdunbar.com/plugins/wordpress-loop/
  * Description: A WordPress widget that gives you unprecendeted control over displaying your content.
- * Version: 0.1
+ * Version: 0.2
  * Author: Ptah Dunbar
  * Author URI: http://ptahdunbar.com
  * License: GNU General Public License 2.0 (GPL) http://www.gnu.org/licenses/gpl.html
@@ -21,7 +21,6 @@
  *
  * @package WordPress_Loop
  */
-
 
 // Load in the loop functions
 require( 'functions.php' );
@@ -141,6 +140,9 @@ class WordPress_Loop extends WP_Widget {
 		elseif ( $instance['h2'] and $instance['title'] )
 			echo "<{$instance['headline_tag']}>{$instance['title']}</{$instance['headline_tag']}>";
 		
+		if ( in_array($instance['post_container'], array( 'ul', 'ol' )) )
+			echo "<{$instance['post_container']}>\n";
+		
 		// Build the query
 		$loop = new WP_Query( $args );
 		
@@ -149,10 +151,13 @@ class WordPress_Loop extends WP_Widget {
 			do_action( 'before_loop' );
 			
 			// Set up the meta data and loop through each entry
-			while ( $loop->have_posts() ) { $loop->the_post();
-				?>
+			while ( $loop->have_posts() ) { $loop->the_post(); ?>
+				
+				<?php $tag = ( in_array($instance['post_container'], array('ol','ul')) ) ? 'li' : 'div'; ?>
+				
+				
 				<!--BEGIN .hentry-->
-				<div id="post-<?php the_ID(); ?>" class="<?php echo join( ' ', get_post_class() ); ?>">
+				<<?php echo $tag; ?> id="post-<?php the_ID(); ?>" class="<?php echo join( ' ', get_post_class() ); ?>">
 					
 					<?php wl_entry_title( array('tag'=> $instance['entry_tag']) ); ?>
 					
@@ -188,7 +193,7 @@ class WordPress_Loop extends WP_Widget {
 					<?php do_action( 'the_loop' ); ?>
 										
 				<!--END .hentry-->
-				</div>
+				</<?php echo $tag; ?>>
 				<?php
 			}
 			
@@ -203,6 +208,9 @@ class WordPress_Loop extends WP_Widget {
 			
 			do_action( 'loop_404' );
 		}
+		
+		if ( in_array($instance['post_container'], array( 'ul', 'ol' )) )
+			echo "</{$instance['post_container']}>\n";
 		
 		if ( $instance['use_default_styles'] )
 			echo $after_widget;
@@ -282,7 +290,7 @@ class WordPress_Loop extends WP_Widget {
 		
 		/***///***/
 		
-		$defaults = array( 'title' => '', 'use_default_styles' => true, 'page_links' => true, 'h2' => true, 'post_type' => 'post', 'post_status' => 'publish', 'users' => 'all', 'order' => 'DESC', 'orderby' => 'date', 'posts_per_page' => get_site_option('posts_per_page'), 'comments_per_page' => get_site_option('comments_per_page'), 'offset' => '0', 'caller_get_posts' => false, 'loop_error_msg' => __( 'Sorry but we couldn\'t find what you were looking for :(.', 'wordpress-loop' ), 'next_link' => __( '&laquo; Older Entries', 'wordpress-loop' ), 'prev_link' => __( 'Newer Entries &raquo;', 'wordpress-loop' ), 'headline_tag' => 'h1', 'entry_tag' => 'h2', 'more_text' => 'Read More', 'content_length' => '-1', 'before_content' => 'Posted by [author] on [date]. [comments] [edit]', 'after_content' => '[tax]', 'enable_images' => false, 'thumbnail_size_w' => get_option('thumbnail_size_w'), 'thumbnail_size_h' => get_option('thumbnail_size_h') );
+		$defaults = array( 'title' => '', 'post_container' => 'div', 'use_default_styles' => true, 'page_links' => true, 'h2' => true, 'post_type' => 'post', 'post_status' => 'publish', 'users' => 'all', 'order' => 'DESC', 'orderby' => 'date', 'posts_per_page' => get_site_option('posts_per_page'), 'comments_per_page' => get_site_option('comments_per_page'), 'offset' => '0', 'caller_get_posts' => false, 'loop_error_msg' => __( 'Sorry but we couldn\'t find what you were looking for :(.', 'wordpress-loop' ), 'next_link' => __( '&laquo; Older Entries', 'wordpress-loop' ), 'prev_link' => __( 'Newer Entries &raquo;', 'wordpress-loop' ), 'headline_tag' => 'h1', 'entry_tag' => 'h2', 'more_text' => 'Read More', 'content_length' => '-1', 'before_content' => 'Posted by [author] on [date]. [comments] [edit]', 'after_content' => '[tax]', 'enable_images' => false, 'thumbnail_size_w' => get_option('thumbnail_size_w'), 'thumbnail_size_h' => get_option('thumbnail_size_h') );
 		$instance = wp_parse_args( $instance, $defaults );
 		?>
 		
@@ -354,6 +362,7 @@ class WordPress_Loop extends WP_Widget {
 			<?php
 			wl_form_checkbox( $this->get_field_id( 'h2' ), $this->get_field_name( 'h2' ), $instance['h2'], __( 'Use title as a headline', 'wordpress-loop' ) );
 			wl_form_select_n( $this->get_field_id( 'headline_tag' ), $this->get_field_name( 'headline_tag' ), $tags, $instance['headline_tag'], '<code>headline markup</code>' );
+			wl_form_select_n( $this->get_field_id( 'post_container' ), $this->get_field_name( 'post_container' ), array( 'div' => 'div', 'ol' => 'ol', 'ul' => 'ul' ), $instance['post_container'], '<code>entry container markup</code>' );
 			wl_form_select_n( $this->get_field_id( 'entry_tag' ), $this->get_field_name( 'entry_tag' ), $tags, $instance['entry_tag'], '<code>entry titles markup</code>' );
 			
 			wl_form_text( $this->get_field_id( 'before_content' ), $this->get_field_name( 'before_content' ), $instance['before_content'], '<code>before_content</code>' );

@@ -116,6 +116,21 @@ function wl_entry_date() {
 }
 
 /**
+ * Displays the current post date, if time since is installed, it will use that instead.
+ * Formatted for hAtom microformat.
+ *
+ * @since 0.2
+ */
+function wl_entry_last_modified() {
+	$output .= "\n" .'<span class="entry-date-last-modified">'. "\n";
+	$output .= '<abbr class="last-modified" title="' . get_the_time( 'Y-m-d\TH:i:sO' ) . '">';
+	$output .= get_the_modified_date();
+	$output .= '</abbr>';
+	$output .= "\n" .'</span>'. "\n";
+	return $output;
+}
+
+/**
  * Displays the number of comments in current post enclosed in a link.
  *
  * @since 0.1
@@ -199,6 +214,7 @@ function wl_entry_tax( $args = array() ) {
 add_shortcode( 'entry_title', 'wl_entry_title' );
 add_shortcode( 'entry_author', 'wl_entry_author' );
 add_shortcode( 'entry_date', 'wl_entry_date' );
+add_shortcode( 'entry_last_modified', 'wl_entry_last_modified' );
 add_shortcode( 'entry_comments', 'wl_entry_comments' );
 add_shortcode( 'entry_time', 'wl_entry_time' );
 add_shortcode( 'entry_edit', 'wl_entry_edit' );
