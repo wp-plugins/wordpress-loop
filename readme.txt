@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: widget, pages, posts, attachments, post types
 Requires at least: 2.9
 Tested up to: 2.9
-Stable tag: 0.3
+Stable tag: 0.1
 
 A WordPress widget that gives you unprecendeted control over displaying your content.
 
