@@ -58,6 +58,13 @@ The WordPress Loop has several action hooks available throughout the loop proces
 
 == Changelog ==
 
+**0.3** _(01/26/2010)_
+
+	* ADDED: new hook `in_the_loop_x` where x is a non-negative number.
+	* ADDED: the post thumbnail image links to the actual post.
+	* UPDATED: `wl_the_content` now wraps excerpts with p tags.
+	* UPDATED: all shortcodes now are filterable
+
 **0.2** _(01/25/2010)_
 
 	* ADDED: ability to customize the main loop tag (div/ol/ul)

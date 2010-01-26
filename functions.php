@@ -27,7 +27,7 @@ function wl_the_content( $more_text, $length ) {
 			$content = implode( ' ', $words );
 			$content = $content . $excerpt_text;
 		}
-		return $content;
+		return "<p>$content</p>";
 		
 	} elseif ( -1 == $length ) {
 		$content = get_the_content( $more_text );
@@ -63,8 +63,8 @@ function wl_pagniation( $next = '&laquo; Older Entries', $prev = 'Newer Entries 
  * @since 0.1
  **/
 function wl_postmeta( $content ) {
-	$content = preg_replace( '/\[(.+?)\]/', '[entry_$1]', $content );
-	return do_shortcode( $content );
+	$content = preg_replace( '/\[(.+?)\]/', '[entry_$1]', $content );	
+	return apply_filters( 'wl_postmeta', do_shortcode( $content ) );
 }
 
 /**
@@ -72,32 +72,37 @@ function wl_postmeta( $content ) {
  *
  * @since 0.1
  **/
-function wl_entry_title( $args = array() ) {
-	$defaults = array( 'tag' => 'h2' );
-	$r = wp_parse_args( $args, $defaults );
-	extract( $r, EXTR_SKIP );
+function wl_entry_title( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '', 'tag' => 'h2' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
 	
-	$output = "<{$r['tag']} class=\"entry-title\">";
+	$output  = "<$tag class=\"entry-title\">";
 	$output .= '<a href="'. get_permalink() .'" rel="bookmark" title="'. the_title_attribute( 'echo=0' ) .'">';
 	$output .= get_the_title();
 	$output .= '</a>';
-	$output .= "</{$r['tag']}>\n";		
-	echo $output; // apply_filters
+	$output .= "</$tag>";
+	
+	return apply_filters( 'wl_entry_title', $before . $output . $after );
 }
 
 /**
- * Displays the current post author.
- * Formatted for hAtom microformat.
+ * Displays the post author
  *
  * @since 0.1
  */
-function wl_entry_author() {
-	$output .= '<span class="entry-author vcard author"><a href="'. get_author_posts_url( get_the_author_ID() ) . '" class="url fn" title="';
+function wl_entry_author( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
+	
+	$output  = '<span class="entry-author vcard author"><a href="'. get_author_posts_url( get_the_author_ID() ) . '" class="url fn" title="';
 	$output .= sprintf( __( 'View all posts by %s', 'wordpress-loop'), esc_attr( get_the_author() ) );
 	$output .= '">';
 	$output .= get_the_author();
-	$output .= '</a></span>' . "\n";
-	return $output;
+	$output .= '</a></span>';
+	
+	return apply_filters( 'wl_entry_author', $before . $output . $after );
 }
 
 /**
@@ -106,13 +111,31 @@ function wl_entry_author() {
  *
  * @since 0.1
  */
-function wl_entry_date() {
-	$output .= "\n" .'<span class="entry-date">'. "\n";
-	$output .= '<abbr class="published" title="' . get_the_time( 'Y-m-d\TH:i:sO' ) . '">';
+function wl_entry_date( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
+	
+	$output  = '<span class="entry-date"><abbr class="published" title="' . get_the_time( 'Y-m-d\TH:i:sO' ) . '">';
 	$output .= get_the_time( get_option('date_format') );
-	$output .= '</abbr>';
-	$output .= "\n" .'</span>'. "\n";
-	return $output;
+	$output .= '</abbr></span>';
+	
+	return apply_filters( 'wl_entry_date', $before . $output . $after );
+}
+
+/**
+ * Displays the current post time
+ *
+ * @since 0.1
+ */
+function wl_entry_time( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
+	
+	$output = '<span class="entry-time">' . get_the_time( get_option('time_format') ) . '</span>';
+	
+	return apply_filters( 'wl_entry_time', $before . $output . $after );
 }
 
 /**
@@ -121,13 +144,16 @@ function wl_entry_date() {
  *
  * @since 0.2
  */
-function wl_entry_last_modified() {
-	$output .= "\n" .'<span class="entry-date-last-modified">'. "\n";
-	$output .= '<abbr class="last-modified" title="' . get_the_time( 'Y-m-d\TH:i:sO' ) . '">';
+function wl_entry_last_modified( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
+	
+	$output .= '<span class="entry-date-last-modified"><abbr class="last-modified" title="' . get_the_time( 'Y-m-d\TH:i:sO' ) . '">';
 	$output .= get_the_modified_date();
-	$output .= '</abbr>';
-	$output .= "\n" .'</span>'. "\n";
-	return $output;
+	$output .= '</abbr></span>';
+	
+	return apply_filters( 'wl_entry_last_modified', $before . $output . $after );
 }
 
 /**
@@ -135,38 +161,16 @@ function wl_entry_last_modified() {
  *
  * @since 0.1
  */
-function wl_entry_comments() {
-	if (is_singular()) return;
+function wl_entry_comments( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '', 'zero' => __( '0 Comments', 'wordpress-loop' ), 'one' => __( '% Comment', 'wordpress-loop' ), 'more' => __( '% Comments', 'wordpress-loop' ), 'none' => __( 'Comments Closed', 'wordpress-loop' ) );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
+	
 	ob_start();
-
-	comments_popup_link( __( 'Leave a comment', 'wordpress-loop' ), '<span class="comment-count">1</span> ' . __( 'Comment', 'wordpress-loop' ), '<span class="comment-count">%</span> '. __( 'Comments', 'wordpress-loop' ), 'commentslink', '<span class="comments-closed">'. __( 'Comments Closed', 'wordpress-loop' ) .'</span>' );
-
-	return '<span class="entry-comments">' . ob_get_clean() . '</span>';
-}
-
-/**
- * Entry Edit link
- *
- * @since 0.1
- */
-function wl_entry_edit() {
-	global $post;
-
-	if ( !current_user_can( 'edit_' . $post->post_type, $post->ID ) )
-		return false;
-
-	$link = '<a class="entry-edit-link" href="' . get_edit_post_link( $post->ID ) . '" title="' . esc_attr( 'Edit ' . $post->post_type ) . '">'. __('Edit', 'wordpress-loop') .'</a>';
-	$edit = '<span class="entry-edit">' . apply_filters( 'edit_post_link', $link, $post->ID ) . '</span>';
-	return $edit;
-}
-
-/**
- * Displays the current post time
- *
- * @since 0.1
- */
-function wl_entry_time() {
-	return '<span class="entry-time">' . get_the_time( get_option('time_format') ) . '</span>';
+	comments_popup_link( $zero, $one, $more, '', $none );
+	$output = '<span class="entry-comments">' . ob_get_clean() . '</span>';
+	
+	return apply_filters( 'wl_entry_comments', $before . $output . $after );
 }
 
 /**
@@ -174,11 +178,14 @@ function wl_entry_time() {
  *
  * @since 0.1
  **/
-function wl_entry_cats( $args = array() ) {
-	$defaults = array( 'sep' => ',' );
-	$r = wp_parse_args( $args, $defaults );
+function wl_entry_cats( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '', 'sep' => ', ' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
 	
-	return '<span class="entry-tax-cats">' . get_the_category_list( $r['sep'], '', false ) . '</span>';
+	$output = '<span class="entry-tax-cats">' . get_the_category_list( $sep, '', false ) . '</span>';
+	
+	return apply_filters( 'wl_entry_cats', $before . $output . $after );
 }
 
 /**
@@ -186,11 +193,14 @@ function wl_entry_cats( $args = array() ) {
  *
  * @since 0.1
  **/
-function wl_entry_tags( $args = array() ) {
-	$defaults = array( 'sep' => ',' );
-	$r = wp_parse_args( $args, $defaults );
+function wl_entry_tags( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '', 'sep' => ', ' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
 
-	return '<span class="entry-tax-tags">' . get_the_tag_list( null, $r['sep'], '' ) . '</span>';
+	$output = '<span class="entry-tax-tags">' . get_the_tag_list( null, $sep, '' ) . '</span>';
+	
+	return apply_filters( 'wl_entry_tags', $before . $output . $after );
 }
 
 /**
@@ -198,27 +208,51 @@ function wl_entry_tags( $args = array() ) {
  *
  * @since 0.1
  **/
-function wl_entry_tax( $args = array() ) {
-	$defaults = array( 'sep' => ',', 'last' => 'and', 'end' => '.' );
-	$r = wp_parse_args( $args, $defaults );
+function wl_entry_tax( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '' );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
 	
 	$_tax = get_the_taxonomies();
 	foreach ( $_tax as $key => $value ) {
 		preg_match( '/(.+?): /i', $value, $matches );
 		$tax[] = '<span class="entry-tax-'. $key .'">' . str_replace( $matches[0], '<span class="entry-tax-meta">'. $matches[1] .': </span>', $value ) . '</span>';
 	}
-	return join( ' ', $tax );
+	$output = join( ' ', $tax );
+	
+	return apply_filters( 'wl_entry_tax', $before . $output . $after );
+}
+
+/**
+ * Entry Edit link
+ *
+ * @since 0.1
+ */
+function wl_entry_edit( $atts = array() ) {
+	$defaults = array( 'before' => '', 'after' => '', 'label' => __( 'Edit', 'wordpress-loop' ) );
+	$args = shortcode_atts( $defaults, $atts );
+	extract( $args, EXTR_SKIP );
+	
+	global $post;
+
+	if ( !current_user_can( 'edit_' . $post->post_type, $post->ID ) )
+		return false;
+
+	$link = '<a class="entry-edit-link" href="' . get_edit_post_link( $post->ID ) . '" title="' . esc_attr( "$label " . $post->post_type ) . '">'. $label .'</a>';
+	$output = '<span class="entry-edit">' . apply_filters( 'edit_post_link', $link, $post->ID ) . '</span>';
+	
+	return apply_filters( 'wl_entry_edit', $before . $output . $after );
 }
 
 // Shortcodes
 add_shortcode( 'entry_title', 'wl_entry_title' );
 add_shortcode( 'entry_author', 'wl_entry_author' );
 add_shortcode( 'entry_date', 'wl_entry_date' );
+add_shortcode( 'entry_time', 'wl_entry_time' );
 add_shortcode( 'entry_last_modified', 'wl_entry_last_modified' );
 add_shortcode( 'entry_comments', 'wl_entry_comments' );
-add_shortcode( 'entry_time', 'wl_entry_time' );
-add_shortcode( 'entry_edit', 'wl_entry_edit' );
 add_shortcode( 'entry_cats', 'wl_entry_cats' );
 add_shortcode( 'entry_tags', 'wl_entry_tags' );
 add_shortcode( 'entry_tax', 'wl_entry_tax' );
+add_shortcode( 'entry_edit', 'wl_entry_edit' );
 ?>

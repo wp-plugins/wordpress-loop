@@ -151,15 +151,19 @@ class WordPress_Loop extends WP_Widget {
 			do_action( 'before_loop' );
 			
 			// Set up the meta data and loop through each entry
-			while ( $loop->have_posts() ) { $loop->the_post(); ?>
+			while ( $loop->have_posts() ) {
+				$loop->the_post(); // Setup the post data
+				
+				if ( !isset($loop_count) )
+					$loop_count = 1;
+				?>
 				
 				<?php $tag = ( in_array($instance['post_container'], array('ol','ul')) ) ? 'li' : 'div'; ?>
-				
 				
 				<!--BEGIN .hentry-->
 				<<?php echo $tag; ?> id="post-<?php the_ID(); ?>" class="<?php echo join( ' ', get_post_class() ); ?>">
 					
-					<?php wl_entry_title( array('tag'=> $instance['entry_tag']) ); ?>
+					<?php echo wl_entry_title( array('tag'=> $instance['entry_tag']) ); ?>
 					
 					<?php
 					if ( $instance['before_content'] )
@@ -168,16 +172,14 @@ class WordPress_Loop extends WP_Widget {
 					
 					<!--BEGIN .entry-content-->
 					<div class="entry-content">
-						<?php 
-						
-						echo '<p>';
-						
-						if ( $instance['post_thumbnails'] and has_post_thumbnail() )
+						<?php
+						if ( $instance['post_thumbnails'] and has_post_thumbnail() ) {
+							echo '<p><a href="'. get_permalink() .'">';
 							the_post_thumbnail();
+							echo '</a></p>';
+						}
 						
 						echo wl_the_content( $instance['more_text'], $instance['content_length'] );
-						
-						echo '</p>';
 						
 						if ( $instance['page_links'] )
 							wp_link_pages( array( 'before' => '<div class="entry-pages"><span>'. __( 'Pages:', 'wordpress-loop' ) .'</span>', 'after' => '</div>', 'next_or_number' => 'number' ) );
@@ -194,7 +196,9 @@ class WordPress_Loop extends WP_Widget {
 										
 				<!--END .hentry-->
 				</<?php echo $tag; ?>>
-				<?php
+				
+				<?php do_action( "in_the_loop_$loop_count" );
+				$loop_count++;
 			}
 			
 			if ( $instance['pagination'] )
@@ -320,8 +324,8 @@ class WordPress_Loop extends WP_Widget {
 			wl_form_checkbox( $this->get_field_id( 'hard_crop_switch' ), $this->get_field_name( 'hard_crop_switch' ), $instance['hard_crop_switch'], __( 'Hard crop images', 'wordpress-loop' ) );
 			
 			wl_form_checkbox( $this->get_field_id( 'pagination' ), $this->get_field_name( 'pagination' ), $instance['pagination'], __( 'Enable pagination', 'wordpress-loop' ) );
-//			wl_form_smalltext( $this->get_field_id( 'next_link' ), $this->get_field_name( 'next_link' ), $instance['next_link'], '<code>next_link</code>' );
-//			wl_form_smalltext( $this->get_field_id( 'prev_link' ), $this->get_field_name( 'prev_link' ), $instance['prev_link'], '<code>prev_link</code>' );
+			wl_form_smalltext( $this->get_field_id( 'next_link' ), $this->get_field_name( 'next_link' ), $instance['next_link'], '<code>next_link</code>' );
+			wl_form_smalltext( $this->get_field_id( 'prev_link' ), $this->get_field_name( 'prev_link' ), $instance['prev_link'], '<code>prev_link</code>' );
 			?>
 		</div>
 		
