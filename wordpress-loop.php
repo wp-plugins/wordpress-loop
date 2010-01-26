@@ -138,7 +138,7 @@ class WordPress_Loop extends WP_Widget {
 		if ( $instance['use_default_styles'] and $instance['title'] )
 			echo $before_title . $instance['title'] . $after_title;
 		elseif ( $instance['h2'] and $instance['title'] )
-			echo "<{$instance['headline_tag']}>{$instance['title']}</{$instance['headline_tag']}>";
+			echo "<{$instance['headline_tag']} class=\"widget-title\">{$instance['title']}</{$instance['headline_tag']}>";
 		
 		if ( in_array($instance['post_container'], array( 'ul', 'ol' )) )
 			echo "<{$instance['post_container']}>\n";
