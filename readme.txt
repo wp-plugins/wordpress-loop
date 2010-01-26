@@ -62,8 +62,9 @@ The WordPress Loop has several action hooks available throughout the loop proces
 
 	* ADDED: new hook `in_the_loop_x` where x is a non-negative number.
 	* ADDED: the post thumbnail image links to the actual post.
+	* ADDED: `widget-title` css class to the widget title.
 	* UPDATED: `wl_the_content` now wraps excerpts with p tags.
-	* UPDATED: all shortcodes and `wl_postmeta` now are filterable
+	* UPDATED: all shortcodes and `wl_postmeta` now are filterable.
 
 **0.2** _(01/25/2010)_
 
