@@ -1,5 +1,167 @@
 <?php
 /**
+ * Fixes some CSS styling bugs
+ *
+ * @since 0.1
+ **/
+function wl_widgets_css() {
+	?>
+	<style type="text/css" media="screen">
+		.widget-wp-loop .mutlifat { height: 7em !important; }
+		.widget-wp-loop textarea { font-size: 12px; }
+		.widget-wp-loop .small-text { width: 50px; float: right; }
+		.widget-wp-loop { float: left; width: 150px; margin-left: 15px; }
+		.widget-wp-loop input[type="checkbox"], .widget-wp-loop input[type="radio"] { margin-right: 4px; }
+		
+		.wl-form-radio { margin-bottom: 3px !important; }
+		.widget-wp-loop p label { font-size: 10px; }
+		
+		.widget-control-actions { clear: both; }
+	</style>
+	<?php
+}
+
+// WL Form helpers
+
+/**
+ * Displays the text input
+ *
+ * @since 0.1
+ **/
+function wl_form_text( $id, $name, $value = false, $label = '' ) {
+	echo '<p>';
+	wl_form_label( array('id' => $id, 'label' => $label) );
+	echo '<input class="code widefat" type="text" id="'. $id .'" name="'. $name .'" value="'. esc_attr($value) .'" />';
+	echo '</p>';
+}
+
+/**
+ * Displays the textarea input
+ *
+ * @since 0.1
+ **/
+function wl_form_bigtext( $id, $name, $value = false, $label = '' ) {
+	echo '<p>';
+	wl_form_label( array('id' => $id, 'label' => $label) );
+	echo '<textarea class="widefat code" cols="16" rows="2" id="'. $id .'" name="'. $name .'">';
+	echo esc_attr($value);
+	echo '</textarea>';
+	echo '</p>';
+}
+
+/**
+ * Displays the small text input
+ *
+ * @since 0.1
+ **/
+function wl_form_smalltext( $id, $name, $value = false, $label = '' ) {
+	echo '<p>';
+	wl_form_label( array('id' => $id, 'label' => $label) );
+	echo '<input class="code small-text" type="text" id="'. $id .'" name="'. $name .'" value="'. esc_attr($value) .'" />';
+	echo '</p>';
+}
+
+/**
+ * Displays the checkbox input
+ *
+ * @since 0.1
+ **/
+function wl_form_checkbox( $id, $name, $value, $label ) {
+	echo '<p><label for="'. $id .'"><input type="checkbox" id="'. $id .'" name="'. $name .'"'. checked( $value, true, false ) .' />'. $label .'</label></p>';
+}
+
+/**
+ * Displays the radio input
+ *
+ * @since 0.1
+ **/
+function wl_form_radio( $id, $name, $options, $value, $label = '' ) {
+	echo '<p class="wl-form-radio">'. $label .'</p>';
+	foreach ( $options as $_value => $_name ) :
+		echo '<p><label for="'. $_value .'"><input type="radio" id="'. $_value .'" name="'. $name .'" value="'. $_value .'" '. checked( $value, $_value, false ) .'/>'. $_name .'</label></p>';
+	endforeach;
+}
+
+/**
+ * Displays the select input
+ *
+ * @since 0.1
+ **/
+function wl_form_select( $id, $name, $options, $value, $label = '' ) {
+	$all = ( 'all' == $value OR null == $value ) ? ' selected="selected"' : null;
+	echo '<p>';
+	wl_form_label( array('id' => $id, 'label' => $label) );
+	?>
+	<select class="widefat" name="<?php echo $name; ?>" id="<?php echo $id; ?>">
+	<?php
+	if ( stripos( $label, 'meta_compare' ) ) {
+		echo '<option value="all"'. $all .'> </option>';
+	} else {
+		echo '<option value="all"'. $all .'>All</option>';
+	}
+	?>
+	<?php foreach ( $options as $option_value => $option_name ) : $selected = ( $value == $option_value ) ? ' selected="selected"' : null; ?>
+		<option<?php echo $selected; ?> value="<?php echo $option_value; ?>"><?php echo $option_name; ?></option>
+	<?php endforeach; ?>
+	</select>
+	<?php
+	echo '</p>';
+}
+
+/**
+ * Displays the select input
+ *
+ * @since 0.1
+ **/
+function wl_form_select_n( $id, $name, $options, $value, $label = '' ) {
+	echo '<p>';
+	wl_form_label( array('id' => $id, 'label' => $label) );
+	?>
+	<select class="widefat" name="<?php echo $name; ?>" id="<?php echo $id; ?>">
+	<?php foreach ( $options as $option_value => $option_name ) : $selected = ( $value == $option_value ) ? ' selected="selected"' : null; ?>
+		<option<?php echo $selected; ?> value="<?php echo $option_value; ?>"><?php echo $option_name; ?></option>
+	<?php endforeach; ?>
+	</select>
+	<?php
+	echo '</p>';
+}
+
+/**
+ * Displays the multi-select input
+ *
+ * @since 0.1
+ **/
+function wl_form_multi_select( $id, $name, $options, $value, $label = '' ) {
+	$value = (array) $value;
+	$all = ( 'all' == $value[0] OR null == $value ) ? ' selected="selected"' : null;
+	echo '<p>';
+	wl_form_label( array('id' => $id, 'label' => $label) );
+	?>
+	<select class="widefat mutlifat" multiple="multiple" size="4" name="<?php echo $name; ?>[]" id="<?php echo $id; ?>">
+		<option value="all"<?php echo $all; ?>>All</option>
+	<?php foreach ( $options as $option_value => $options_name ) : $selected = ( in_array( $option_value, $value ) OR in_array( $option_name, $value ) ) ? ' selected="selected"' : null; ?>
+		<option<?php echo $selected; ?> value="<?php echo $option_value; ?>"><?php echo $options_name; ?></option>
+	<?php endforeach; ?>
+	</select>
+	<?php
+	echo '</p>';
+}
+
+/**
+ * Displays the label
+ *
+ * @since 0.1
+ **/
+function wl_form_label( $args = array() ) {
+	extract( $args );
+	$id = $id ? ' for="'. $id .'"' : null;
+	$title = $title ? ' title="'. $title .'"' : null;
+	echo '<label'. $id . $title . '>'. $label .'</label>';
+}
+
+// WL Widget API
+
+/**
  * Displays the post content
  *
  * @since 0.1
@@ -8,6 +170,7 @@ function wl_the_content( $more_text, $length ) {
 	global $id;
 	$length = intval( $length );
 	
+	$content = false;
 	$raw_more_text = $more_text;
 	$more_text = '<a href="' . get_permalink() . '" class="more-link">'. $raw_more_text .'</a>';
 	
@@ -27,19 +190,18 @@ function wl_the_content( $more_text, $length ) {
 			$content = implode( ' ', $words );
 			$content = $content . $excerpt_text;
 		}
-		return "<p>$content</p>";
+		$content = "<p>$content</p>";
 		
 	} elseif ( -1 == $length ) {
 		$content = get_the_content( $more_text );
 		$content = apply_filters( 'the_content', $content );
 		$content = str_replace( ']]>', ']]&gt;', $content );
-		return $content;
 		
 	} elseif ( 0 == $length ) {
-		return '';
-	} else {
-		return false;
+		$content = '';
 	}
+	
+	return apply_filters( 'wl_the_content', $content, $length );
 }
 
 /**
@@ -66,6 +228,8 @@ function wl_postmeta( $content ) {
 	$content = preg_replace( '/\[(.+?)\]/', '[entry_$1]', $content );	
 	return apply_filters( 'wl_postmeta', do_shortcode( $content ) );
 }
+
+// WL Widget Shortcodes
 
 /**
  * Displays the entry title
@@ -139,8 +303,7 @@ function wl_entry_time( $atts = array() ) {
 }
 
 /**
- * Displays the current post date, if time since is installed, it will use that instead.
- * Formatted for hAtom microformat.
+ * Displays the last modified date.
  *
  * @since 0.2
  */
@@ -162,7 +325,7 @@ function wl_entry_last_modified( $atts = array() ) {
  * @since 0.1
  */
 function wl_entry_comments( $atts = array() ) {
-	$defaults = array( 'before' => '', 'after' => '', 'zero' => __( '0 Comments', 'wordpress-loop' ), 'one' => __( '% Comment', 'wordpress-loop' ), 'more' => __( '% Comments', 'wordpress-loop' ), 'none' => __( 'Comments Closed', 'wordpress-loop' ) );
+	$defaults = array( 'before' => '', 'after' => '', 'zero' => __( '0 Comments', 'wordpress-loop' ), 'one' => __( '1 Comment', 'wordpress-loop' ), 'more' => __( '% Comments', 'wordpress-loop' ), 'none' => __( 'Comments Closed', 'wordpress-loop' ) );
 	$args = shortcode_atts( $defaults, $atts );
 	extract( $args, EXTR_SKIP );
 	
@@ -183,7 +346,12 @@ function wl_entry_cats( $atts = array() ) {
 	$args = shortcode_atts( $defaults, $atts );
 	extract( $args, EXTR_SKIP );
 	
-	$output = '<span class="entry-tax-cats">' . get_the_category_list( $sep, '', false ) . '</span>';
+	$terms = get_the_category_list( $sep, '', false );
+	
+	if ( !$terms )
+		return false;
+	
+	$output = '<span class="entry-tax-tags">' . $terms . '</span>';
 	
 	return apply_filters( 'wl_entry_cats', $before . $output . $after );
 }
@@ -198,7 +366,12 @@ function wl_entry_tags( $atts = array() ) {
 	$args = shortcode_atts( $defaults, $atts );
 	extract( $args, EXTR_SKIP );
 
-	$output = '<span class="entry-tax-tags">' . get_the_tag_list( null, $sep, '' ) . '</span>';
+	$terms = get_the_tag_list( null, $sep, '' );
+	
+	if ( !$terms )
+		return false;
+	
+	$output = '<span class="entry-tax-tags">' . $terms . '</span>';
 	
 	return apply_filters( 'wl_entry_tags', $before . $output . $after );
 }
@@ -213,10 +386,15 @@ function wl_entry_tax( $atts = array() ) {
 	$args = shortcode_atts( $defaults, $atts );
 	extract( $args, EXTR_SKIP );
 	
+	$output = '';
 	$_tax = get_the_taxonomies();
+	
+	if ( empty($_tax) )
+		return false;
+	
 	foreach ( $_tax as $key => $value ) {
 		preg_match( '/(.+?): /i', $value, $matches );
-		$tax[] = '<span class="entry-tax-'. $key .'">' . str_replace( $matches[0], '<span class="entry-tax-meta">'. $matches[1] .': </span>', $value ) . '</span>';
+		$tax[] = '<span class="entry-tax-'. $key .'">' . str_replace( $matches[0], '<span class="entry-tax-meta">'. $matches[1] .':</span> ', $value ) . '</span>';
 	}
 	$output = join( ' ', $tax );
 	

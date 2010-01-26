@@ -3,7 +3,7 @@
  * Plugin Name: WordPress Loop Widget
  * Plugin URI: http://ptahdunbar.com/plugins/wordpress-loop/
  * Description: A WordPress widget that gives you unprecendeted control over displaying your content.
- * Version: 0.3
+ * Version: 0.4
  * Author: Ptah Dunbar
  * Author URI: http://ptahdunbar.com
  * License: GNU General Public License 2.0 (GPL) http://www.gnu.org/licenses/gpl.html
@@ -123,10 +123,16 @@ class WordPress_Loop extends WP_Widget {
 		if ( 'all' != $instance['meta_compare'] )
 			$args['meta_compare'] = $instance['meta_compare'];
 		
+		// Use original $wp_query
+		if ( $instance['wp_query'] ) {
+			global $wp_query;
+			$args = $wp_query->query_vars;
+		}
+		
 		// add custom query args, overrides anything, even the world!
 		if ( $instance['custom_query_args'] ) {
 			parse_str( $instance['custom_query_args'], $custom_args );
-			$args = wp_parse_args( $custom_args, $args );
+			$args[] = wp_parse_args( $custom_args, $args );
 		}
 		
 		echo '<div id="widget-wrap-'. $id .'" class="widget-wordpress-loop">' . "\n";
@@ -182,7 +188,7 @@ class WordPress_Loop extends WP_Widget {
 						echo wl_the_content( $instance['more_text'], $instance['content_length'] );
 						
 						if ( $instance['page_links'] )
-							wp_link_pages( array( 'before' => '<div class="entry-pages"><span>'. __( 'Pages:', 'wordpress-loop' ) .'</span>', 'after' => '</div>', 'next_or_number' => 'number' ) );
+							wp_link_pages( array( 'before' => '<div class="paged-links"><span>'. __( 'Pages:', 'wordpress-loop' ) .'</span>', 'after' => '</div>', 'next_or_number' => 'number' ) );
 						?>
 					<!--END .entry-content-->
 					</div>
@@ -228,6 +234,7 @@ class WordPress_Loop extends WP_Widget {
 		$instance = $new_instance;
 		
 		// checkboxes
+		$instance['wp_query'] = $new_instance['wp_query'] ? true : false;
 		$instance['use_default_styles'] = $new_instance['use_default_styles'] ? true : false;
 		$instance['h2'] = $new_instance['h2'] ? true : false;
 		$instance['caller_get_posts'] = $new_instance['caller_get_posts'] ? true : false;
@@ -294,13 +301,21 @@ class WordPress_Loop extends WP_Widget {
 		
 		/***///***/
 		
-		$defaults = array( 'title' => '', 'post_container' => 'div', 'use_default_styles' => true, 'page_links' => true, 'h2' => true, 'post_type' => 'post', 'post_status' => 'publish', 'users' => 'all', 'order' => 'DESC', 'orderby' => 'date', 'posts_per_page' => get_site_option('posts_per_page'), 'comments_per_page' => get_site_option('comments_per_page'), 'offset' => '0', 'caller_get_posts' => false, 'loop_error_msg' => __( 'Sorry but we couldn\'t find what you were looking for :(.', 'wordpress-loop' ), 'next_link' => __( '&laquo; Older Entries', 'wordpress-loop' ), 'prev_link' => __( 'Newer Entries &raquo;', 'wordpress-loop' ), 'headline_tag' => 'h1', 'entry_tag' => 'h2', 'more_text' => 'Read More', 'content_length' => '-1', 'before_content' => 'Posted by [author] on [date]. [comments] [edit]', 'after_content' => '[tax]', 'enable_images' => false, 'thumbnail_size_w' => get_option('thumbnail_size_w'), 'thumbnail_size_h' => get_option('thumbnail_size_h') );
+		$defaults = array( 'title' => '', 'post_container' => 'div', 'wp_query' => false, 'use_default_styles' => true, 'page_links' => true, 'h2' => true,
+			'post_type' => 'post', 'post_status' => 'publish', 'users' => 'all', 'order' => 'DESC', 'orderby' => 'date', 'posts_per_page' => get_site_option('posts_per_page'), 'comments_per_page' => get_site_option('comments_per_page'),
+			'offset' => '0', 'caller_get_posts' => false, 'loop_error_msg' => __( 'Sorry but we couldn\'t find what you were looking for :(.', 'wordpress-loop' ),
+			'next_link' => __( '&laquo; Older Entries', 'wordpress-loop' ), 'prev_link' => __( 'Newer Entries &raquo;', 'wordpress-loop' ),
+			'headline_tag' => 'h1', 'entry_tag' => 'h2', 'more_text' => 'Read More', 'content_length' => '-1',
+			'before_content' => 'Posted by [author] on [date] [comments before="| "] [edit before="| "]', 'after_content' => '[tax]',
+			'enable_images' => false, 'thumbnail_size_w' => get_option('thumbnail_size_w'), 'thumbnail_size_h' => get_option('thumbnail_size_h')
+		);
 		$instance = wp_parse_args( $instance, $defaults );
 		?>
 		
 		<div class="widget-wp-loop" style="margin-left:0px;">
 			<?php
 			wl_form_text( $this->get_field_id( 'title' ), $this->get_field_name( 'title' ), $instance['title'], '<code>title</code>' );
+			wl_form_checkbox( $this->get_field_id( 'wp_query' ), $this->get_field_name( 'wp_query' ), $instance['wp_query'], __( 'Use <code>$wp_query</code>', 'wordpress-loop' ) );
 			wl_form_smalltext( $this->get_field_id( 'posts_per_page' ), $this->get_field_name( 'posts_per_page' ), $instance['posts_per_page'], '<code>posts_per_page</code>' );
 			wl_form_multi_select( $this->get_field_id( 'post_type' ), $this->get_field_name( 'post_type' ), $post_types, $instance['post_type'], '<code>post_type</code>' );
 			wl_form_multi_select( $this->get_field_id( 'post_status' ), $this->get_field_name( 'post_status' ), $post_type_statuses, $instance['post_status'], '<code>post_status</code>' );
@@ -379,165 +394,5 @@ class WordPress_Loop extends WP_Widget {
 		</div>
 		<?php
 	}
-}
-
-/**
- * fixes some CSS styling bugs
- *
- * @since 0.1
- **/
-function wl_widgets_css() {
-	?>
-	<style type="text/css" media="screen">
-		.widget-wp-loop .mutlifat { height: 7em !important; }
-		.widget-wp-loop textarea { font-size: 12px; }
-		.widget-wp-loop .small-text { width: 50px; float: right; }
-		.widget-wp-loop { float: left; width: 150px; margin-left: 15px; }
-		.widget-wp-loop input[type="checkbox"], .widget-wp-loop input[type="radio"] { margin-right: 4px; }
-		
-		.wl-form-radio { margin-bottom: 3px !important; }
-		.widget-wp-loop p label { font-size: 10px; }
-		
-		.widget-control-actions { clear: both; }
-	</style>
-	<?php
-}
-
-/* Helper Functions */
-
-/**
- * Displays the text input
- *
- * @since 0.1
- **/
-function wl_form_text( $id, $name, $value = false, $label = '' ) {
-	echo '<p>';
-	wl_form_label( array('id' => $id, 'label' => $label) );
-	echo '<input class="code widefat" type="text" id="'. $id .'" name="'. $name .'" value="'. esc_attr($value) .'" />';
-	echo '</p>';
-}
-
-/**
- * Displays the textarea input
- *
- * @since 0.1
- **/
-function wl_form_bigtext( $id, $name, $value = false, $label = '' ) {
-	echo '<p>';
-	wl_form_label( array('id' => $id, 'label' => $label) );
-	echo '<textarea class="widefat code" cols="16" rows="2" id="'. $id .'" name="'. $name .'">';
-	echo esc_attr($value);
-	echo '</textarea>';
-	echo '</p>';
-}
-
-/**
- * Displays the small text input
- *
- * @since 0.1
- **/
-function wl_form_smalltext( $id, $name, $value = false, $label = '' ) {
-	echo '<p>';
-	wl_form_label( array('id' => $id, 'label' => $label) );
-	echo '<input class="code small-text" type="text" id="'. $id .'" name="'. $name .'" value="'. esc_attr($value) .'" />';
-	echo '</p>';
-}
-
-/**
- * Displays the checkbox input
- *
- * @since 0.1
- **/
-function wl_form_checkbox( $id, $name, $value, $label ) {
-	echo '<p><label for="'. $id .'"><input type="checkbox" id="'. $id .'" name="'. $name .'"'. checked( $value, true, false ) .' />'. $label .'</label></p>';
-}
-
-/**
- * Displays the radio input
- *
- * @since 0.1
- **/
-function wl_form_radio( $id, $name, $options, $value, $label = '' ) {
-	echo '<p class="wl-form-radio">'. $label .'</p>';
-	foreach ( $options as $_value => $_name ) :
-		echo '<p><label for="'. $_value .'"><input type="radio" id="'. $_value .'" name="'. $name .'" value="'. $_value .'" '. checked( $value, $_value, false ) .'/>'. $_name .'</label></p>';
-	endforeach;
-}
-
-/**
- * Displays the select input
- *
- * @since 0.1
- **/
-function wl_form_select( $id, $name, $options, $value, $label = '' ) {
-	$all = ( 'all' == $value OR null == $value ) ? ' selected="selected"' : null;
-	echo '<p>';
-	wl_form_label( array('id' => $id, 'label' => $label) );
-	?>
-	<select class="widefat" name="<?php echo $name; ?>" id="<?php echo $id; ?>">
-	<?php
-	if ( stripos( $label, 'meta_compare' ) ) {
-		echo '<option value="all"'. $all .'> </option>';
-	} else {
-		echo '<option value="all"'. $all .'>All</option>';
-	}
-	?>
-	<?php foreach ( $options as $option_value => $option_name ) : $selected = ( $value == $option_value ) ? ' selected="selected"' : null; ?>
-		<option<?php echo $selected; ?> value="<?php echo $option_value; ?>"><?php echo $option_name; ?></option>
-	<?php endforeach; ?>
-	</select>
-	<?php
-	echo '</p>';
-}
-
-/**
- * Displays the select input
- *
- * @since 0.1
- **/
-function wl_form_select_n( $id, $name, $options, $value, $label = '' ) {
-	echo '<p>';
-	wl_form_label( array('id' => $id, 'label' => $label) );
-	?>
-	<select class="widefat" name="<?php echo $name; ?>" id="<?php echo $id; ?>">
-	<?php foreach ( $options as $option_value => $option_name ) : $selected = ( $value == $option_value ) ? ' selected="selected"' : null; ?>
-		<option<?php echo $selected; ?> value="<?php echo $option_value; ?>"><?php echo $option_name; ?></option>
-	<?php endforeach; ?>
-	</select>
-	<?php
-	echo '</p>';
-}
-
-/**
- * Displays the multi-select input
- *
- * @since 0.1
- **/
-function wl_form_multi_select( $id, $name, $options, $value, $label = '' ) {
-	$value = (array) $value;
-	$all = ( 'all' == $value[0] OR null == $value ) ? ' selected="selected"' : null;
-	echo '<p>';
-	wl_form_label( array('id' => $id, 'label' => $label) );
-	?>
-	<select class="widefat mutlifat" multiple="multiple" size="4" name="<?php echo $name; ?>[]" id="<?php echo $id; ?>">
-		<option value="all"<?php echo $all; ?>>All</option>
-	<?php foreach ( $options as $option_value => $options_name ) : $selected = ( in_array( $option_value, $value ) OR in_array( $option_name, $value ) ) ? ' selected="selected"' : null; ?>
-		<option<?php echo $selected; ?> value="<?php echo $option_value; ?>"><?php echo $options_name; ?></option>
-	<?php endforeach; ?>
-	</select>
-	<?php
-	echo '</p>';
-}
-
-/**
- * Displays the label
- *
- * @since 0.1
- **/
-function wl_form_label( $args = array() ) {
-	extract( $args );
-	$id = $id ? ' for="'. $id .'"' : null;
-	$title = $title ? ' title="'. $title .'"' : null;
-	echo '<label'. $id . $title . '>'. $label .'</label>';
 }
 ?>
